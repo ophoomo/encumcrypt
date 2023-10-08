@@ -5,8 +5,6 @@ This is a project for the Information System Security course that will demonstra
 
 
 ## Tech Stack
-React, Unocss, Vite, Rust, Tauri
-
 
 <div align="left">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" height="40" alt="typescript logo"  />
