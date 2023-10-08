@@ -1,4 +1,5 @@
 interface IMessageBox {
+  state: string;
   name: string;
   payload: string;
 }

@@ -1,29 +1,57 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::net::SocketAddr;
+use futures_util::{SinkExt, StreamExt};
+use serde_json::{json, Value};
+use tokio_tungstenite::{accept_async, tungstenite::Message};
 
 use local_ip_address::local_ip;
-use tokio::net::{TcpStream, TcpListener};
+use tokio::net::TcpListener;
 
 async fn start_server(host: String) {
     let try_socket = TcpListener::bind(&host).await;
     let listener: TcpListener = try_socket.expect("Failed to bind");
 
     while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(accept_connection(stream, addr));
+        tokio::spawn(handle_connection(stream, addr));
     }
 }
 
-async fn accept_connection(stream: TcpStream, addr: SocketAddr) {
+async fn handle_connection(stream: tokio::net::TcpStream, addr: std::net::SocketAddr) {
     println!("Incoming TCP connection from: {}", addr);
-
-    let mut ws_stream = tokio_tungstenite::accept_async(stream)
+    let mut ws_stream = accept_async(stream)
         .await
         .expect("Error during the websocket handshake occurred");
-    
-    let (r, w) = ws_stream.get_mut().split();
 
+    while let Some(Ok(msg)) = ws_stream.next().await {
+        match msg {
+            Message::Text(text) => {
+                let v: Value = match serde_json::from_str(&text) {
+                    Ok(it) => it,
+                    Err(_) => return,
+                };
+                if v["state"] == String::from("Join") {
+                    let response_msg = Message::Text(
+                        serde_json::to_string(&json!({
+                            "state": "Connected",
+                            "name": v["name"],
+                        }))
+                        .unwrap(),
+                    );
+                    let _ = ws_stream.send(response_msg).await;
+                } else if v["state"] == String::from("Chat") {
+                    let _ = ws_stream
+                        .send(tokio_tungstenite::tungstenite::Message::Text(text))
+                        .await;
+                }
+            }
+            Message::Close(_) => {
+                println!("IP Address {} Disconnedted", addr);
+                break;
+            }
+            _ => {}
+        }
+    }
 }
 
 fn get_ip_user() -> String {
