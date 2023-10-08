@@ -1,12 +1,14 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use futures_util::{SinkExt, StreamExt};
-use serde_json::{json, Value};
-use tokio_tungstenite::{accept_async, tungstenite::Message};
 
+use std::net::SocketAddr;
+use futures_util::{SinkExt, StreamExt};
 use local_ip_address::local_ip;
+use serde_json::json;
 use tokio::net::TcpListener;
+use tokio::net::TcpStream;
+use tokio_tungstenite::{accept_async, tungstenite::Message};
 
 async fn start_server(host: String) {
     let try_socket = TcpListener::bind(&host).await;
@@ -17,20 +19,25 @@ async fn start_server(host: String) {
     }
 }
 
-async fn handle_connection(stream: tokio::net::TcpStream, addr: std::net::SocketAddr) {
+async fn handle_connection(
+    stream: TcpStream,
+    addr: SocketAddr,
+) {
     println!("Incoming TCP connection from: {}", addr);
-    let mut ws_stream = accept_async(stream)
+    let ws_stream = accept_async(stream)
         .await
         .expect("Error during the websocket handshake occurred");
 
-    while let Some(Ok(msg)) = ws_stream.next().await {
+    let (mut ws_sender, mut ws_receiver) = ws_stream.split();
+
+    while let Some(Ok(msg)) = ws_receiver.next().await {
         match msg {
             Message::Text(text) => {
-                let v: Value = match serde_json::from_str(&text) {
+                let v: serde_json::Value = match serde_json::from_str(&text) {
                     Ok(it) => it,
                     Err(_) => return,
                 };
-                if v["state"] == String::from("Join") {
+                if v["state"] == serde_json::Value::String("Join".to_string()) {
                     let response_msg = Message::Text(
                         serde_json::to_string(&json!({
                             "state": "Connected",
@@ -38,11 +45,10 @@ async fn handle_connection(stream: tokio::net::TcpStream, addr: std::net::Socket
                         }))
                         .unwrap(),
                     );
-                    let _ = ws_stream.send(response_msg).await;
-                } else if v["state"] == String::from("Chat") {
-                    let _ = ws_stream
-                        .send(tokio_tungstenite::tungstenite::Message::Text(text))
-                        .await;
+                    let _ = ws_sender.send(response_msg).await;
+
+                } else if v["state"] == serde_json::Value::String("Chat".to_string()) {
+                    let _ = ws_sender.send(Message::Text(text.clone())).await;
                 }
             }
             Message::Close(_) => {

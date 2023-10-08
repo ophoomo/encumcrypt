@@ -1,4 +1,4 @@
-import { Dispatch, ReactElement, createContext, useState } from "react";
+import { ReactElement, createContext, useState } from "react";
 
 interface IAppContext {
     NameState: {
