@@ -16,7 +16,6 @@ export default function Chat() {
   const { NameState, HostState } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState<IChat[]>([]);
-  const message = useRef<string>("");
   let ws = useRef<WebSocket>();
 
   const onClickExitRoom = () => {
@@ -62,9 +61,8 @@ export default function Chat() {
       case "Connected":
         setLoading(false);
         break;
-      default:
-        setChats((prev) => [...prev, data]);
     }
+    setChats((prev) => [...prev, data]);
   };
 
   const wsClose = (event: CloseEvent) => {
@@ -86,12 +84,12 @@ export default function Chat() {
     });
   };
 
-  const sendData = () => {
+  const sendData = (message: string) => {
     ws.current?.send(
       JSON.stringify({
         state: "Chat",
         name: NameState.value,
-        payload: encodeData(message.current),
+        payload: encodeData(message),
       } as IChat)
     );
   };
@@ -102,11 +100,9 @@ export default function Chat() {
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key == "Enter") {
-      sendData();
-      message.current = "";
-      (document.getElementById("input") as HTMLInputElement).value = "";
-    } else {
-      message.current += event.key;
+      let input = document.getElementById("input") as HTMLInputElement;
+      sendData(input.value);
+      input.value = "";
     }
   };
 
@@ -120,7 +116,7 @@ export default function Chat() {
         <Loading />
       ) : (
         <div>
-          <h1>{ HostState.value }</h1>
+          <h1>{HostState.value}</h1>
           <div>
             {chats.map((chat, i) => (
               <MessageBox key={i} {...chat} />
