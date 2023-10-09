@@ -59,8 +59,6 @@ async fn handle_connection(stream: TcpStream, addr: SocketAddr, state: PeerMap) 
             Err(_) => serde_json::Value::Null,
         };
 
-        // ws_sender.send(Message::Text(("helloo".into())));
-
         // We want to broadcast the message to everyone except ourselves.
         let broadcast_recipients = peers
             .iter()
@@ -70,7 +68,6 @@ async fn handle_connection(stream: TcpStream, addr: SocketAddr, state: PeerMap) 
         for recp in broadcast_recipients {
             // recp.unbounded_send(msg.clone()).unwrap();
             if v["state"] == serde_json::Value::String("Join".to_string()) {
-                println!("{}", "hello");
                 let response_msg = Message::Text(
                     serde_json::to_string(&json!({
                         "state": "Connected",
@@ -91,6 +88,9 @@ async fn handle_connection(stream: TcpStream, addr: SocketAddr, state: PeerMap) 
     pin_mut!(broadcast_incoming, receive_from_others);
     future::select(broadcast_incoming, receive_from_others).await;
     println!("{} disconnected", &addr);
+    if state.lock().unwrap().keys().next() == Some(&addr) {
+        // how to shutdown TcpListener?
+    }
     state.lock().unwrap().remove(&addr);
 }
 
