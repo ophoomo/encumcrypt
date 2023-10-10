@@ -97,6 +97,7 @@ export default function Home() {
     <div>
       <button onClick={onClickCreateServer}>Create Room</button>
       <button onClick={onClickConnectServer}>Connect Room</button>
+      Test Push
     </div>
   );
 }
