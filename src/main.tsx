@@ -1,6 +1,5 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
-import "./styles.css";
+import "./assets/css/styles.css";
 import 'virtual:uno.css'
 import { RouterProvider } from "react-router-dom";
 import router from "./router";

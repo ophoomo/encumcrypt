@@ -22,6 +22,41 @@ This is a project for the Information System Security course that will demonstra
   <img src="https://skillicons.dev/icons?i=tailwind" height="40" alt="tailwindcss logo"  />
 </div>
 
+## Required
+
+| Software | Version  | 
+| :-------- | :------- |
+| `NodeJS` | `18` |
+| `Rust` | `1.66` |
+| `C++ Build Tools` | `MSVC v143` |
+
+
+## Run Locally
+
+Clone the project
+
+```bash
+  git clone https://github.com/ophoomo/encumcrypt.git
+```
+
+Go to the project directory
+
+```bash
+  cd encumcrypt
+```
+
+Install dependencies
+
+```bash
+  npm install
+```
+
+Start the program
+
+```bash
+  npm run tauri dev
+```
+
 ## Authors
 
 - [@ophoomo](https://github.com/ophoomo)
