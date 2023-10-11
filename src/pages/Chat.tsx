@@ -22,15 +22,21 @@ export default function Chat() {
 
   const [messageApi, contextHolder] = message.useMessage();
 
+  // function click ออกจากห้อง
   const onClickExitRoom = () => {
+    // ตัดการเชื่อมต่อกับ server
     ws.current?.close();
   };
 
   const connectServer = () => {
     try {
+      // เปิดช่องการเชื่อมต่อไปยัง Socket Server
       ws.current = new WebSocket(HostState.value);
+      // เมื่อเปิดการเชื่อมต่อ ให้ไปทำ function wsOpen
       ws.current.onopen = wsOpen;
+      // เมื่อมีการปิดให้ไปทำ function wsMessage
       ws.current.onmessage = wsMessage;
+      // เมื่อมีการปิดให้ไปทำ function wsClose
       ws.current.onclose = wsClose;
     } catch (err: any) {
       console.log('err on connect server', err);
@@ -38,8 +44,11 @@ export default function Chat() {
     }
   };
 
+  // function เมื่อเปิดการเชื่อมต่อ Socket
   const wsOpen = () => {
+    // เช็คว่า เชื่อมต่อ Socket ได้หรือยัง
     if (ws.current?.readyState === WebSocket.OPEN) {
+      // เมื่อได้แล้ว ให้ส่งข้อความไปที่ Socket
       ws.current?.send(
         JSON.stringify({
           state: "Join",
@@ -47,8 +56,10 @@ export default function Chat() {
         })
       );
     } else if (ws.current?.readyState == WebSocket.CONNECTING) {
+      // ถ้ากำลังเชื่อมต่อให้สร้างทำการสั่งเชื่อมต่อใหม่
       ws.current?.addEventListener("open", () => wsOpen());
     } else {
+      // ถ้าเชื่อมต่อแล้วยังไม่ได้อีกให้ขึ้น error แล้วเด้งกลับไปหน้าหลัก
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -63,24 +74,32 @@ export default function Chat() {
     }
   };
 
+  // function เมื่อมีการส่งข้อความกลับมา
   const wsMessage = (event: MessageEvent) => {
-    console.log(event);
+    // แปลงข้อความให้อยู่ในรูปแบบ JSON
     const data = JSON.parse(event.data);
+    // ตรวจสอบ State
     switch (data.state) {
+      // ถ้า state เท่ากับ Connected
       case "Connected":
+        // ให้ปิด loading
         setLoading(false);
         break;
     }
+    // นำข้อความเก็บลงตัวแปรแล้วนำไปแสดง
     setChats((prev) => [...prev, data]);
   };
 
+  // function เมื่อมีการส่งข้อความกลับมา
   const wsClose = (event: CloseEvent) => {
     let text = "";
+    // เช็คว่ามีการปิดเซิฟเวอร์ที่ถูกต้องหรือไม่
     if (event.wasClean) {
       text = `Connection closed cleanly`;
     } else {
       text = "Connection died";
     }
+    // แสดงข้อความออกทางจอภาพ
     Swal.fire({
       icon: text === 'Connection died' ? 'error' : 'success',
       title: "",
@@ -98,7 +117,9 @@ export default function Chat() {
     });
   };
 
+  // function ส่งข้อความไปยัง server
   const sendData = (message: string) => {
+    // ส่งข้อความไป server ในรูปแบบ JSON
     ws.current?.send(
       JSON.stringify({
         state: "Chat",
@@ -153,8 +174,10 @@ export default function Chat() {
 
   const sendMsg = () => {
     let input = document.getElementById("input") as HTMLInputElement;
-      sendData(input.value);
-      input.value = "";
+      if (input.value.length > 0) {
+        sendData(input.value);
+        input.value = "";
+      }
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
