@@ -207,7 +207,7 @@ export default function Chat() {
                 />
                 <div 
                   onClick={sendMsg}
-                  className={`btn w-20 flex-center bg-indigo-500 hover:bg-indigo-700`} 
+                  className={`btn w-20 flex-center bg-blue-500 hover:bg-blue-700`} 
                 >
                   ส่ง
                 </div>
