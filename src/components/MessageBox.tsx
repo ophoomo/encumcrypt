@@ -4,17 +4,29 @@ interface IMessageBox {
   payload: string;
   ownerMsg?: boolean;
 }
+function removeEmptyValuesFromArray(arr: (string | null | undefined)[]): string[] {
+  // ใช้ filter() เพื่อกรองค่าที่เป็นค่าว่างออก
+  const filteredArray = arr.filter(value => value !== null && value !== undefined && value !== '') as string[];
+  return filteredArray;
+}
 export default function MessageBox({ name, payload, state, ...props }: IMessageBox) {
-  const decodeData = (data: string): string => {
+  const decodeData = (encodedText: string): string => {
 
-    let decodedText = '';
-    const parts = data.split('%');
-    for (let i = 1; i < parts.length; i++) {
-      const charCode = parseInt(parts[i], 16);
-      decodedText += String.fromCharCode(charCode);
-    }
+  let data = '';
+  const parts = encodedText.split('%');
 
-    return decodedText;
+  const newarray = removeEmptyValuesFromArray(parts)
+  const lentext = newarray.length
+  const halfLength = Math.floor(lentext / 2);
+  const array1 = newarray.slice(0, halfLength);  // ตั้งแต่ index 0 ถึงครึ่งหนึ่งของอาร์เรย์
+  const array2 = newarray.slice(halfLength);  //แบ่งครึ่ง Array
+  const mergedArray_decimal = [...array2, ...array1];
+
+  for (let i = 0; i < mergedArray_decimal.length; i++) {
+    const charCode = parseInt(mergedArray_decimal[i], 16);
+    data += String.fromCharCode(charCode);
+  }
+  return data;
   };
 
   const check_state = () => {

@@ -129,14 +129,24 @@ export default function Chat() {
     );
   };
 
-  const encodeData = (data: string): string => {
-    let encodedText = '';
-    for (let i = 0; i < data.length; i++) {
-      const char = data[i];
+  const encodeData = (text: string): string => {
+    let encodedText = [];
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
       const charCode = char.charCodeAt(0);
-      encodedText += '%' + charCode.toString(16).toUpperCase();
+      // encodedText += '%' + charCode.toString(16).toUpperCase();
+      encodedText.push(charCode.toString(16).toUpperCase());
     }
-    return encodedText;
+    const lentext = encodedText.length
+    const resultOfdiv_lentext = Math.ceil(lentext / 2);
+    const array1 = encodedText.slice(0, resultOfdiv_lentext);  // ตั้งแต่ index 0 ถึงครึ่งหนึ่งของอาร์เรย์
+    const array2 = encodedText.slice(resultOfdiv_lentext);  //แบ่งครึ่ง Array
+    const mergedArray_decimal = [...array2, ...array1];
+
+    const data = mergedArray_decimal.map(item => item + "%").join('');
+
+    
+    return data
   };
 
   const sendMsg = () => {
