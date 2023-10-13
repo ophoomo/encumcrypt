@@ -62,3 +62,6 @@ Start the program
 - [@ophoomo](https://github.com/ophoomo)
 - [@icesuaraara](https://github.com/icesuaraara)
 - [@csnpch](https://github.com/csnpch)
+
+## Preview
+<img src="https://raw.githubusercontent.com/ophoomo/encumcrypt/master/preview.png" alt="preview app" />
